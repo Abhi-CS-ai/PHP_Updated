@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinity Logo</title>
+  <!-- Load p5.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js" defer></script>
+  <!-- Optional: Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      max-width: 90vw;
+      max-height: 90vh;
+      filter: drop-shadow(0 0 10px #00ffff); /* glow effect */
+    }
+
+    #logo-text {
+      margin-top: -30px;
+      font-size: 2rem;
+      text-align: center;
+      color: #00ffff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Container for logo and text -->
+  <div id="logo-container">
+    <div id="logo-text">YourBrand</div>
+  </div>
+
+  <script>
+    let phase = "drawing";
+    let time = 0;
+    let windowSize = 0.02;
+    let holdCounter = 0;
+    let fadeAlpha = 255;
+    let breathingAngle = 0;
+    let canvas;
+
+    function setup() {
+      canvas = createCanvas(windowWidth * 0.5, windowWidth * 0.5); // dynamic size
+      canvas.parent('logo-container');
+      colorMode(HSB, 360, 100, 100, 255);
+      noFill();
+      strokeWeight(15);
+      frameRate(60);
+      noiseDetail(2, 1);
+    }
+
+    function draw() {
+      background(0, 0, 0, 0); // transparent background for glow effect
+      translate(width / 2, height / 2);
+
+      // Breathing effect (slight scale pulsation)
+      breathingAngle += 0.02;
+      let breathingScale = 1 + 0.05 * sin(breathingAngle);
+      scale(breathingScale);
+
+      // Control the phases: drawing -> hold -> fading
+      if (phase === "drawing") {
+        drawShapeUpTo(time);
+        time += windowSize;
+        if (time >= TWO_PI) {
+          time = TWO_PI;
+          phase = "hold";
+          holdCounter = 0;
+        }
+      } else if (phase === "hold") {
+        drawShapeUpTo(TWO_PI);
+        holdCounter++;
+        if (holdCounter > 120) {
+          phase = "fading";
+          fadeAlpha = 255;
+        }
+      } else if (phase === "fading") {
+        drawShapeWithAlpha(fadeAlpha);
+        fadeAlpha -= 3;
+        if (fadeAlpha <= 0) {
+          time = 0;
+          phase = "drawing";
+        }
+      }
+    }
+
+    function drawShapeUpTo(limit) {
+      beginShape();
+      let stepIndex = 0;
+      for (let t = 0; t <= limit; t += 0.02) {
+        let pos = infinityShape(t);
+        let col = getSparklingRainbowColor(t, millis(), stepIndex);
+        stroke(col.h, col.s, col.b);
+        vertex(pos.x, pos.y);
+        stepIndex++;
+      }
+      endShape();
+    }
+
+    function drawShapeWithAlpha(alpha) {
+      beginShape();
+      let stepIndex = 0;
+      for (let t = 0; t <= TWO_PI; t += 0.02) {
+        let pos = infinityShape(t);
+        let col = getSparklingRainbowColor(t, millis(), stepIndex);
+        stroke(col.h, col.s, col.b, alpha);
+        vertex(pos.x, pos.y);
+        stepIndex++;
+      }
+      endShape();
+    }
+
+    function infinityShape(t) {
+      let x = 150 * sin(t);
+      let y = 80 * sin(2 * t);
+      return { x, y };
+    }
+
+    function getSparklingRainbowColor(t, timeMs, index) {
+      let pos = t / TWO_PI;
+      let timeHueShift = (timeMs / 5000) % 1;
+      let hue = (pos + timeHueShift) * 360;
+      if (hue > 360) hue -= 360;
+
+      let saturation = 100;
+
+      // Sparkling brightness modulation using sine wave + noise
+      let baseBrightness = 120;
+      let sparkle = sin(timeMs * 0.01 + index * 0.5) * 5;
+      let noiseVal = (noise(index * 0.5, timeMs * 0.001) - 0.5) * 5;
+      let brightness = constrain(baseBrightness + sparkle + noiseVal, 90, 100);
+
+      return { h: hue, s: saturation, b: brightness };
+    }
+
+    // Make canvas responsive to window size
+    function windowResized() {
+      resizeCanvas(windowWidth * 0.5, windowWidth * 0.5);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block title %}Scan Results{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+        <h1 class="text-3xl font-bold">Scan Results</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+            <span class="flex items-center">
+                <i class="fas {{ 'fa-file-code text-blue-500' if scan.source_type == 'file' else 'fa-globe text-green-500' }} mr-2"></i>
+                {{ scan.source }}
+                <span class="ml-4 text-sm">{{ scan.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+            </span>
+        </p>
+    </div>
+    <div class="mt-4 sm:mt-0 flex flex-wrap gap-3">
+        <a href="{{ url_for('export_scan', scan_id=scan.id) }}" target="_blank"
+           class="flex items-center py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
+            <i class="fas fa-download mr-2"></i>
+            Export JSON
+        </a>
+        <a href="{{ url_for('scan') }}"
+           class="flex items-center py-2 px-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md transition-colors duration-200">
+            <i class="fas fa-plus mr-2"></i>
+            New Scan
+        </a>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {% for severity, icon, color, count in [
+        ('Total Issues', 'fa-shield-alt', 'blue', results.summary.total_vulnerabilities if results and results.summary and results.summary.total_vulnerabilities is defined else 0),
+        ('High Severity', 'fa-exclamation-triangle', 'red', results.summary.high_severity if results and results.summary and results.summary.high_severity is defined else 0),
+        ('Medium Severity', 'fa-exclamation-circle', 'yellow', results.summary.medium_severity if results and results.summary and results.summary.medium_severity is defined else 0)
+    ] %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-{{ color }}-100 dark:bg-{{ color }}-900 text-{{ color }}-600 dark:text-{{ color }}-400 rounded-full flex items-center justify-center">
+                <i class="fas {{ icon }} text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-semibold">{{ severity }}</h3>
+                <p class="text-3xl font-bold">{{ count }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 🧪 Regex-Based Vulnerabilities -->
+{% if results and results.vulnerabilities %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">🔎 Regex-Based Vulnerabilities</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="py-2 px-4 text-left">Type</th>
+                    <th class="py-2 px-4 text-left">Severity</th>
+                    <th class="py-2 px-4 text-left">Line</th>
+                    <th class="py-2 px-4 text-left">Code Snippet</th>
+                    <th class="py-2 px-4 text-left">Remediation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vuln in results.vulnerabilities %}
+                <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-2 px-4">{{ vuln.type }}</td>
+                    <td class="py-2 px-4">{{ vuln.severity }}</td>
+                    <td class="py-2 px-4">{{ vuln.line_number }}</td>
+                    <td class="py-2 px-4 whitespace-pre-wrap">{{ vuln.code_snippet }}</td>
+                    <td class="py-2 px-4">{{ vuln.remediation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- 🤖 LLM Raw Analysis -->
+{% if results and results.llm_analysis_raw %}
+{% set llm_data = results.llm_analysis_parsed %}
+{% if llm_data and llm_data.vulnerabilities %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">🤖 LLM (CodeGemma) Raw Vulnerabilities</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="py-2 px-4 text-left">Type</th>
+                    <th class="py-2 px-4 text-left">Line Hint</th>
+                    <th class="py-2 px-4 text-left">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in llm_data.vulnerabilities %}
+                <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-2 px-4">{{ v.type }}</td>
+                    <td class="py-2 px-4">{{ v.line_hint }}</td>
+                    <td class="py-2 px-4">{{ v.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- ✅ LLM-Validated Verdicts -->
+{% if results and results.validated_findings %}
+{% set validated = results.validated_findings_parsed %}
+{% if validated and validated.results %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">✅ LLM-Validated Vulnerability Verdicts</h2>
+    <div class="overflow-x-auto">   
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="py-2 px-4 text-left">Type</th>
+                    <th class="py-2 px-4 text-left">Line Hint</th>
+                    <th class="py-2 px-4 text-left">Verdict</th>
+                    <th class="py-2 px-4 text-left">Explanation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in validated.results %}
+                <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-2 px-4">{{ r.type }}</td>
+                    <td class="py-2 px-4">{{ r.line_hint }}</td>
+                    <td class="py-2 px-4">
+                        {% if r.verdict == 'TRUE' %}
+                            <span class="text-red-600 font-semibold">VULNERABLE</span>
+                        {% else %}
+                            <span class="text-green-600 font-semibold">SAFE</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-2 px-4">{{ r.explanation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- ✅ All Clean Fallback -->
+{% if not results or (not results.vulnerabilities and not results.llm_analysis_raw) %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+    <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+        <i class="fas fa-check-circle text-2xl"></i>
+    </div>
+    <h3 class="text-xl font-semibold mb-2">No Vulnerabilities Found</h3>
+    <p class="text-gray-600 dark:text-gray-400">Great job! No security issues were detected in the scanned code.</p>
+</div>
+{% endif %}
+{% endblock %}

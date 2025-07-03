@@ -1,0 +1,22 @@
+{
+  "name": "php-vulnerability-scanner",
+  "version": "1.0.0",
+  "description": "A web application to scan PHP files for vulnerabilities",
+  "main": "index.js",
+  "scripts": {
+    "start": "python app.py",
+    "dev": "python app.py",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "php",
+    "security",
+    "vulnerability",
+    "scanner"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "tailwindcss": "^3.3.3"
+  }
+}

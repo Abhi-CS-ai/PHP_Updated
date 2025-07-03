@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center py-12">
+    <div class="max-w-3xl text-center">
+        <h1 class="text-4xl font-bold mb-6">Secure Your PHP Applications</h1>
+        <p class="text-xl mb-8">Scan your PHP code for vulnerabilities and get actionable remediation steps</p>
+        
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <a href="{{ url_for('register') }}" class="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 font-medium">
+                Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="py-3 px-6 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors duration-200 font-medium">
+                Login
+            </a>
+        </div>
+    </div>
+    
+    <div class="mt-16 w-full max-w-6xl">
+        <h2 class="text-2xl font-bold text-center mb-8">Key Features</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                <div class="w-12 h-12 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-center">Vulnerability Detection</h3>
+                <p class="text-gray-600 dark:text-gray-400 text-center">Detect SQL injection, XSS, file inclusion, and many other vulnerabilities in your PHP code.</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                <div class="w-12 h-12 mx-auto mb-4 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-code text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-center">Code Analysis</h3>
+                <p class="text-gray-600 dark:text-gray-400 text-center">Upload PHP files or analyze websites for comprehensive static code analysis.</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                <div class="w-12 h-12 mx-auto mb-4 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-file-alt text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2 text-center">Detailed Reports</h3>
+                <p class="text-gray-600 dark:text-gray-400 text-center">Get comprehensive reports with code snippets and actionable remediation steps.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-16 w-full max-w-4xl">
+        <h2 class="text-2xl font-bold text-center mb-8">How It Works</h2>
+        
+        <div class="relative">
+            <div class="absolute left-8 top-0 h-full w-1 bg-blue-200 dark:bg-blue-900"></div>
+            
+            <div class="relative z-10 mb-12">
+                <div class="flex items-start">
+                    <div class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full font-bold text-xl">1</div>
+                    <div class="ml-8">
+                        <h3 class="text-xl font-semibold mb-2">Upload or Enter URL</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Upload your PHP files or enter the URL of a PHP-based website for analysis.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative z-10 mb-12">
+                <div class="flex items-start">
+                    <div class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full font-bold text-xl">2</div>
+                    <div class="ml-8">
+                        <h3 class="text-xl font-semibold mb-2">Automated Scanning</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Our system scans the code for known vulnerability patterns and security issues.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative z-10">
+                <div class="flex items-start">
+                    <div class="flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full font-bold text-xl">3</div>
+                    <div class="ml-8">
+                        <h3 class="text-xl font-semibold mb-2">Review Results</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Get detailed reports with severity levels, affected code snippets, and recommended fixes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

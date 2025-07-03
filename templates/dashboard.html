@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-4 rounded-md {% if category == 'error' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% else %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Action cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- New Scan -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-search text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold">New Scan</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Start a new vulnerability scan</p>
+                </div>
+            </div>
+            <a href="{{ url_for('scan') }}" class="mt-4 inline-block py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                Start Scan
+            </a>
+        </div>
+
+        <!-- View History -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-history text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold">View History</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Access your previous scan results</p>
+                </div>
+            </div>
+            <a href="{{ url_for('history') }}" class="mt-4 inline-block py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200">
+                View History
+            </a>
+        </div>
+
+        <!-- Help Modal Trigger -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col justify-between">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-question-circle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold">Help</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Learn about vulnerability types</p>
+                </div>
+            </div>
+            <button id="helpButton" aria-label="Open Help Modal" class="mt-4 inline-block py-2 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md transition-colors duration-200">
+                View Help
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scans Table -->
+{% if recent_scans %}
+<div>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">Recent Scans</h2>
+        <a href="{{ url_for('history') }}" class="text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-100 dark:bg-gray-700">
+                        <th class="py-3 px-4 text-left">Date</th>
+                        <th class="py-3 px-4 text-left">Source</th>
+                        <th class="py-3 px-4 text-left">Vulnerabilities</th>
+                        <th class="py-3 px-4 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in recent_scans %}
+                    <tr class="border-t border-gray-200 dark:border-gray-700">
+                        <td class="py-3 px-4">{{ scan.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="py-3 px-4">
+                            <span class="flex items-center">
+                                <i class="fas {{ 'fa-file-code text-blue-500' if scan.source_type == 'file' else 'fa-globe text-green-500' }} mr-2"></i>
+                                {{ scan.source }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            {% set results = scan.parsed_results or {} %}
+                            {% set summary = results.get('summary', {}) %}
+                            <div class="flex flex-wrap gap-2">
+                                {% if summary.get('high_severity', 0) > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ summary.get('high_severity') }} High</span>
+                                {% endif %}
+                                {% if summary.get('medium_severity', 0) > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">{{ summary.get('medium_severity') }} Medium</span>
+                                {% endif %}
+                                {% if summary.get('low_severity', 0) > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ summary.get('low_severity') }} Low</span>
+                                {% endif %}
+                                {% if summary.get('total_vulnerabilities', 0) == 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">No vulnerabilities</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="{{ url_for('scan_result', scan_id=scan.id) }}" class="text-blue-600 dark:text-blue-400 hover:underline">View Results</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- No Scans Yet Block -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center mt-6">
+    <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-2xl"></i>
+    </div>
+    <h3 class="text-xl font-semibold mb-2">No Scans Yet</h3>
+    <p class="text-gray-600 dark:text-gray-400 mb-4">You haven't performed any vulnerability scans yet.</p>
+    <a href="{{ url_for('scan') }}" class="inline-block py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+        Start Your First Scan
+    </a>
+</div>
+{% endif %}
+
+<!-- Help Modal -->
+<div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden" aria-hidden="true">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 p-4">
+            <h3 class="text-xl font-bold">Vulnerability Types</h3>
+            <button id="closeHelpModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" aria-label="Close Help Modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-6">
+            <div>
+                <h4 class="text-lg font-semibold text-red-600 dark:text-red-400">SQL Injection</h4>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">SQL injection occurs when untrusted data is sent to an interpreter as part of a command or query, allowing attackers to execute unintended commands or access unauthorized data.</p>
+                <div class="mt-2 p-3 bg-gray-100 dark:bg-gray-900 rounded-md">
+                    <p class="font-mono text-sm">$query = "SELECT * FROM users WHERE username = '" . $_GET['username'] . "';";</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-semibold text-red-600 dark:text-red-400">Cross-Site Scripting (XSS)</h4>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">XSS attacks occur when an application includes untrusted data in a new web page without proper validation, allowing attackers to execute scripts in a victim's browser.</p>
+                <div class="mt-2 p-3 bg-gray-100 dark:bg-gray-900 rounded-md">
+                    <p class="font-mono text-sm">echo "Welcome, " . $_GET['name'];</p>
+                </div>
+            </div>
+
+            <!-- Add more types here -->
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+
+{% block title %}New Scan{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">New Vulnerability Scan</h1>
+
+    <!-- Flash message display -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-4 rounded-md {% if category == 'error' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% else %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-8">
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+                <button id="fileTabButton" class="tab-button py-2 px-4 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-medium">
+                    <i class="fas fa-file-code mr-2"></i> Upload PHP File
+                </button>
+                <button id="urlTabButton" class="tab-button py-2 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium">
+                    <i class="fas fa-globe mr-2"></i> Enter URL
+                </button>
+            </div>
+
+            <!-- File Upload Tab -->
+            <div id="fileTab" class="tab-content">
+                <form method="POST" action="{{ url_for('scan') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="scan_type" value="file">
+                    
+                    <div class="mb-6">
+                        <label for="file" class="block text-sm font-medium mb-1">PHP File</label>
+                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center" id="dropZone">
+                            <input type="file" id="file" name="file" accept=".php" class="hidden">
+                            <div class="space-y-2">
+                                <i class="fas fa-upload text-4xl text-gray-400 dark:text-gray-600"></i>
+                                <div class="text-lg font-medium">Drag and drop your PHP file here</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">or</div>
+                                <button type="button" id="browseButton" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
+                                    Browse Files
+                                </button>
+                            </div>
+                            <div id="fileInfo" class="mt-4 text-left hidden">
+                                <div class="flex items-center p-3 bg-blue-50 dark:bg-blue-900 rounded-md">
+                                    <i class="fas fa-file-code text-blue-500 text-xl mr-3"></i>
+                                    <div class="flex-1">
+                                        <div id="fileName" class="font-medium"></div>
+                                        <div id="fileSize" class="text-sm text-gray-600 dark:text-gray-400"></div>
+                                    </div>
+                                    <button type="button" id="removeFile" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Only PHP files (*.php) are accepted. Max size: 16MB.</p>
+                    </div>
+                    
+                    <button type="submit" id="fileSubmitButton" disabled
+                            class="w-full py-3 px-4 bg-gray-400 text-white font-medium rounded-md transition-colors duration-200 cursor-not-allowed">
+                        <i class="fas fa-search mr-2"></i> Start Scan
+                    </button>
+                </form>
+            </div>
+
+            <!-- URL Scan Tab -->
+            <div id="urlTab" class="tab-content hidden">
+                <form method="POST" action="{{ url_for('scan') }}">
+                    <input type="hidden" name="scan_type" value="url">
+                    
+                    <div class="mb-6">
+                        <label for="url" class="block text-sm font-medium mb-1">Website URL</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-globe text-gray-400"></i>
+                            </div>
+                            <input type="text" id="url" name="url" placeholder="https://example.com" required
+                                   class="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Enter the full URL of a PHP-based website.</p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
+                        <i class="fas fa-search mr-2"></i> Start Scan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="mt-10 bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6">
+        <h3 class="text-lg font-semibold mb-3 flex items-center">
+            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-2"></i>
+            About PHP Vulnerability Scanning
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">We analyze PHP code for common security vulnerabilities, including:</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400 list-disc list-inside">
+            <li>SQL Injection vulnerabilities</li>
+            <li>Cross-Site Scripting (XSS)</li>
+            <li>File Inclusion issues</li>
+            <li>Insecure file uploads</li>
+            <li>Hardcoded credentials</li>
+            <li>...and more</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
