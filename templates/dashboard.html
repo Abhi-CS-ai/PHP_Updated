@@ -99,19 +99,18 @@
                             </span>
                         </td>
                         <td class="py-3 px-4">
-                            {% set results = scan.parsed_results or {} %}
-                            {% set summary = results.get('summary', {}) %}
+                            {% set results = scan.parsed_results %}
                             <div class="flex flex-wrap gap-2">
-                                {% if summary.get('high_severity', 0) > 0 %}
-                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ summary.get('high_severity') }} High</span>
+                                {% if results.summary.high_severity > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ results.summary.high_severity }} High</span>
                                 {% endif %}
-                                {% if summary.get('medium_severity', 0) > 0 %}
-                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">{{ summary.get('medium_severity') }} Medium</span>
+                                {% if results.summary.medium_severity > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">{{ results.summary.medium_severity }} Medium</span>
                                 {% endif %}
-                                {% if summary.get('low_severity', 0) > 0 %}
-                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ summary.get('low_severity') }} Low</span>
+                                {% if results.summary.low_severity > 0 %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ results.summary.low_severity }} Low</span>
                                 {% endif %}
-                                {% if summary.get('total_vulnerabilities', 0) == 0 %}
+                                {% if results.summary.total_vulnerabilities == 0 %}
                                 <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">No vulnerabilities</span>
                                 {% endif %}
                             </div>

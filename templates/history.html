@@ -42,8 +42,7 @@
             </thead>
             <tbody>
                 {% for scan in scans %}
-                {% set results = scan.parsed_results or {} %}
-                {% set summary = results.get('summary', {}) %}
+                {% set results = scan.parsed_results %}
                 <tr class="border-t border-gray-200 dark:border-gray-700">
                     <td class="py-3 px-4">{{ scan.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td class="py-3 px-4 max-w-xs truncate" title="{{ scan.source }}">{{ scan.source }}</td>
@@ -55,22 +54,25 @@
                     </td>
                     <td class="py-3 px-4">
                         <div class="flex flex-wrap gap-2">
-                            {% if summary.get('high_severity', 0) > 0 %}
+                            {% if results.summary.high_severity > 0 %}
                             <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                {{ summary.get('high_severity') }} High
+                                {{ results.summary.high_severity }} High
                             </span>
                             {% endif %}
-                            {% if summary.get('medium_severity', 0) > 0 %}
+                            
+                            {% if results.summary.medium_severity > 0 %}
                             <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                {{ summary.get('medium_severity') }} Medium
+                                {{ results.summary.medium_severity }} Medium
                             </span>
                             {% endif %}
-                            {% if summary.get('low_severity', 0) > 0 %}
+                            
+                            {% if results.summary.low_severity > 0 %}
                             <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                {{ summary.get('low_severity') }} Low
+                                {{ results.summary.low_severity }} Low
                             </span>
                             {% endif %}
-                            {% if summary.get('total_vulnerabilities', 0) == 0 %}
+                            
+                            {% if results.summary.total_vulnerabilities == 0 %}
                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                 Clean
                             </span>
@@ -78,15 +80,17 @@
                         </div>
                     </td>
                     <td class="py-3 px-4">
-                        <div class="flex space-x-3">
-                            <a href="{{ url_for('scan_result', scan_id=scan.id) }}" 
-                               class="text-blue-600 dark:text-blue-400 hover:underline">View</a>
-                            <a href="{{ url_for('export_scan', scan_id=scan.id) }}" target="_blank"
-                               class="text-blue-600 dark:text-blue-400 hover:underline">Export</a>
-                            <form method="POST" action="{{ url_for('delete_scan', scan_id=scan.id) }}" onsubmit="return confirm('Are you sure you want to delete this scan?');">
-                                <button type="submit" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
-                            </form>
-                        </div>
+<div class="flex space-x-3">
+    <a href="{{ url_for('scan_result', scan_id=scan.id) }}" 
+       class="text-blue-600 dark:text-blue-400 hover:underline">View</a>
+    <a href="{{ url_for('export_scan', scan_id=scan.id) }}" target="_blank"
+       class="text-blue-600 dark:text-blue-400 hover:underline">Export</a>
+
+    <form method="POST" action="{{ url_for('delete_scan', scan_id=scan.id) }}" onsubmit="return confirm('Are you sure you want to delete this scan?');">
+        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
+    </form>
+</div>
+
                     </td>
                 </tr>
                 {% endfor %}
